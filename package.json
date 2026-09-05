@@ -1,0 +1,31 @@
+{
+  "name": "shapez-multiplayer-server",
+  "version": "1.1.0",
+  "private": true,
+  "description": "Независимый комнатный WebSocket-сервер для мода multiplay Shapez.io",
+  "author": "QXIK_mIJ",
+  "license": "MIT",
+  "bin": "server.js",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "check": "node --check server.js && node --check src/room-server.js",
+    "test": "node --test test/*.test.js",
+    "build": "powershell -ExecutionPolicy Bypass -File ./build-server.ps1"
+  },
+  "dependencies": {
+    "ws": "8.21.3"
+  },
+  "devDependencies": {
+    "@yao-pkg/pkg": "6.7.0"
+  },
+  "pkg": {
+    "scripts": [
+      "src/**/*.js"
+    ],
+    "targets": [
+      "node22-win-x64"
+    ],
+    "outputPath": "dist"
+  }
+}

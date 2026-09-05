@@ -1,0 +1,11 @@
+{
+  "host": "0.0.0.0",
+  "port": 7777,
+  "maxPlayers": 8,
+  "maxMessageBytes": 1048576,
+  "maxSnapshotBytes": 67108864,
+  "messagesPerSecond": 120,
+  "bytesPerSecond": 2097152,
+  "heartbeatIntervalMs": 15000,
+  "clientTimeoutMs": 45000
+}

@@ -1,0 +1,53 @@
+﻿# Dependencies
+node_modules/
+
+# Logs
+*.log
+logs/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Local configuration
+config.local.json
+config.*.local.json
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# macOS
+.DS_Store
+
+# IDEs
+.vscode/
+.idea/
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.old
+*.swp
+*~
+
+# Build artifacts
+dist/
+build/
+
+# Server executable
+*.exe
+
+# Archives
+*.zip
+*.7z
+*.rar
+
+# Test / coverage artifacts
+coverage/
+.nyc_output/
+
+# Editor temporary files
+*.orig
