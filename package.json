@@ -1,10 +1,10 @@
 {
-  "name": "shapez-multiplayer-server",
+  "name": "shapez-multiplayer",
   "version": "1.1.0",
   "private": true,
   "description": "Независимый комнатный WebSocket-сервер для мода multiplay Shapez.io",
   "author": "QXIK_mIJ",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "bin": "server.js",
   "main": "server.js",
   "scripts": {
