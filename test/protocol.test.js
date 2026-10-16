@@ -74,7 +74,7 @@ test("два клиента: hello/welcome, snapshot, operation, cursor, chat, d
         assert.deepEqual((await received).payload.op, operation);
     }
 
-    for (const type of ["cursor", "chat", "request-resync", "ping"]) {
+    for (const type of ["cursor", "chat", "request-resync", "ping", "rtt", "wait-host"]) {
         const received = next(host.socket, m => m.type === "peer-message" && m.payload.t === type);
         client.socket.send(JSON.stringify({ type, payload: { t: type, marker: type } }));
         assert.equal((await received).payload.marker, type);

@@ -15,10 +15,8 @@ const METADATA = {
     version: "1.1.0",
     id: "multiplay",
     description:
-        "Совместная игра по сети: хост создаёт мир и приглашает друга кодом, " +
-        "друг подключается — и вы строите вместе в реальном времени: видно " +
-        "постройки и курсоры друг друга. Совместим с другими модами при " +
-        "одинаковых версиях у всех игроков.",
+        "Co-op multiplayer: build factories together in real time with synchronized buildings and cursors. " +
+        "/ Совместная игра по сети: стройте фабрику вместе в реальном времени с синхронизацией построек и курсоров.",
     minimumGameVersion: ">=1.5.0",
     // Не влияет на сейвы: подключаться/отключаться можно в любой момент
     doesNotAffectSavegame: true,
@@ -89,9 +87,191 @@ function mpGetGameVersion() {
 /*  Транспорт                                                           */
 /* ------------------------------------------------------------------ */
 
+/* ------------------------------------------------------------------ */
+/*  Локализация (i18n: ru / en)                                         */
+/* ------------------------------------------------------------------ */
+
+const MP_I18N = {
+    ru: {
+        "mod.name": "Мультиплеер",
+        "btn.multiplayer": "Мультиплеер",
+        "btn.host": "Открыть текущий мир (я — хост)",
+        "btn.join": "Подключиться к другу",
+        "dialog.main.title": "Мультиплеер",
+        "dialog.main.desc":
+            "Запусти отдельный Shapez Multiplayer Server. Хост открывает текущий мир " +
+            "и получает код приглашения.\n" +
+            "Друг вводит код и подключается к его миру.",
+        "dialog.server.title": "Адрес сервера",
+        "dialog.server.desc": "Сначала запусти отдельный shapez-multiplayer-server.exe, затем укажи его WebSocket-адрес.",
+        "dialog.server.badUrl": "Нужен адрес вида ws://IP:порт",
+        "dialog.server.createFail": "Не удалось создать комнату: {0}",
+        "dialog.created.title": "Мир создан",
+        "dialog.created.desc":
+            "<div>Комната создана! Отправь другу этот код:</div>" +
+            "<div style=\"font-size:11px; margin-top:8px; opacity:0.8;\">" +
+            "Затем начни новую игру (или продолжи существующую) — друг подключится к твоему миру.</div>",
+        "dialog.name.title": "Имя игрока",
+        "dialog.name.desc": "Друг будет видеть это имя и твой курсор.",
+        "dialog.name.placeholder": "Твоё имя",
+        "dialog.name.default": "Игрок",
+        "dialog.connect.title": "Подключение",
+        "dialog.connect.desc": "Вставь код от друга (MPZ2:...).",
+        "dialog.connect.badCode": "Некорректный код подключения",
+        "dialog.connect.fail": "Не удалось подключиться:\n{0}",
+        "dialog.connect.waiting": "Подключено! Ждём, пока хост войдёт в мир — после этого ты автоматически попадёшь в его игру.",
+        "notify.joined": "{0} подключился",
+        "notify.left": "{0} покинул игру",
+        "notify.loadingWorld": "Загружаем мир хоста...",
+        "notify.disconnected": "Соединение с хостом потеряно{0}",
+        "notify.sessionEnded": "Сессия мультиплеера завершена",
+        "notify.reconnectNotice": "Выйди в меню и подключись заново",
+        "notify.kicked": "Тебя отключили от сервера: {0}",
+        "notify.opRejected": "Операция отклонена: {0}",
+        "notify.resynced": "Мир обновлён из хоста",
+        "notify.resyncFailed": "Не удалось обновить мир — смотри журнал ошибок",
+        "notify.hostOnlyCode": "Код доступен только у хоста",
+        "notify.clientOnlyResync": "Обновление доступно только у клиента — у хоста мир и так актуальный",
+        "notify.copyFailed": "Не удалось скопировать — выдели код вручную",
+        "hud.hostThisWorld": "Создать сессию для этого мира",
+        "hud.copyCode": "Скопировать код мира",
+        "hud.copyCodeTitle": "Код появится у друга в буфере обмена — он сможет подключиться",
+        "hud.copied": "Скопировано!",
+        "hud.resyncWorld": "Обновить мир",
+        "hud.resyncTitle": "Полностью синхронизировать мир с хостом (чинит рассинхрон)",
+        "hud.resyncing": "Обновляю...",
+        "hud.chat": "Чат",
+        "hud.chatPlaceholder": "Сообщение, Enter — отправить, Esc — закрыть",
+        "hud.leaveSession": "Покинуть сессию",
+        "hud.roleHost": "хост",
+        "hud.roleClient": "клиент",
+        "hud.roleNoSession": "нет сессии",
+        "hud.youTag": "(ты)",
+        "hud.ms": "мс",
+        "hud.connectedTo": "Подключён к {0}",
+        "compat.rejected": "Подключение отклонено",
+        "compat.gameVersion": "Версия игры: хост {0}, клиент {1}",
+        "compat.modVersion": "Версия multiplay: хост {0}, клиент {1}",
+        "compat.missing": "Отсутствуют у клиента: {0}",
+        "compat.extra": "Лишние у клиента: {0}",
+        "compat.versionMismatch": "Другие версии: {0}",
+        "compat.modsMismatch": "Моды не совпадают с хостом!\n\n",
+        "compat.hostHas": "У хоста есть, у тебя нет: {0}\n",
+        "compat.clientHas": "У тебя есть, у хоста нет: {0}",
+        "signal.title": "Сигнал",
+        "signal.desc": "Выбери значение из списка или введи код",
+        "signal.label": "Код сигнала (например: CuCuCuCu, red, 1)"
+    },
+    en: {
+        "mod.name": "Multiplayer",
+        "btn.multiplayer": "Multiplayer",
+        "btn.host": "Open current world (Host)",
+        "btn.join": "Join a friend (Client)",
+        "dialog.main.title": "Multiplayer",
+        "dialog.main.desc":
+            "Start the standalone Shapez Multiplayer Server first. The host opens the current world " +
+            "and receives an invite code.\n" +
+            "A friend enters the code to join the world.",
+        "dialog.server.title": "Server Address",
+        "dialog.server.desc": "Start the standalone shapez-multiplayer-server.exe first, then enter its WebSocket address.",
+        "dialog.server.badUrl": "Requires address format ws://IP:port",
+        "dialog.server.createFail": "Failed to create room: {0}",
+        "dialog.created.title": "World Created",
+        "dialog.created.desc":
+            "<div>Room created! Send this code to your friend:</div>" +
+            "<div style=\"font-size:11px; margin-top:8px; opacity:0.8;\">" +
+            "Then start a new game (or continue an existing one) — your friend will join your world.</div>",
+        "dialog.name.title": "Player Name",
+        "dialog.name.desc": "Your friend will see this name and your cursor.",
+        "dialog.name.placeholder": "Your name",
+        "dialog.name.default": "Player",
+        "dialog.connect.title": "Connect",
+        "dialog.connect.desc": "Paste the invite code from your friend (MPZ2:...).",
+        "dialog.connect.badCode": "Invalid connection code",
+        "dialog.connect.fail": "Failed to connect:\n{0}",
+        "dialog.connect.waiting": "Connected! Waiting for host to enter the world — you will join automatically.",
+        "notify.joined": "{0} joined",
+        "notify.left": "{0} left the game",
+        "notify.loadingWorld": "Loading host world...",
+        "notify.disconnected": "Connection to host lost{0}",
+        "notify.sessionEnded": "Multiplayer session ended",
+        "notify.reconnectNotice": "Return to menu and reconnect",
+        "notify.kicked": "Disconnected from server: {0}",
+        "notify.opRejected": "Operation rejected: {0}",
+        "notify.resynced": "World resynced from host",
+        "notify.resyncFailed": "Failed to resync world — check error log",
+        "notify.hostOnlyCode": "Invite code is only available on host",
+        "notify.clientOnlyResync": "Resync only available on client — host world is already authoritative",
+        "notify.copyFailed": "Failed to copy — select code manually",
+        "hud.hostThisWorld": "Host this world",
+        "hud.copyCode": "Copy invite code",
+        "hud.copyCodeTitle": "The invite code will be copied to your clipboard — send it to a friend",
+        "hud.copied": "Copied!",
+        "hud.resyncWorld": "Resync world",
+        "hud.resyncTitle": "Fully resynchronize world from host (fixes desync)",
+        "hud.resyncing": "Resyncing...",
+        "hud.chat": "Chat",
+        "hud.chatPlaceholder": "Message, Enter to send, Esc to close",
+        "hud.leaveSession": "Leave session",
+        "hud.roleHost": "host",
+        "hud.roleClient": "client",
+        "hud.roleNoSession": "no session",
+        "hud.youTag": "(you)",
+        "hud.ms": "ms",
+        "hud.connectedTo": "Connected to {0}",
+        "compat.rejected": "Connection rejected",
+        "compat.gameVersion": "Game version: host {0}, client {1}",
+        "compat.modVersion": "Multiplay version: host {0}, client {1}",
+        "compat.missing": "Missing on client: {0}",
+        "compat.extra": "Extra on client: {0}",
+        "compat.versionMismatch": "Version mismatch: {0}",
+        "compat.modsMismatch": "Mods do not match host!\n\n",
+        "compat.hostHas": "Host has, you do not: {0}\n",
+        "compat.clientHas": "You have, host does not: {0}",
+        "signal.title": "Signal",
+        "signal.desc": "Choose a value from the list or enter a code",
+        "signal.label": "Signal code (e.g.: CuCuCuCu, red, 1)"
+    }
+};
+
+function mpGetLanguage(app) {
+    try {
+        if (app && app.settings && typeof app.settings.getLanguage === "function") {
+            const lang = app.settings.getLanguage();
+            if (lang) return lang.toLowerCase().startsWith("ru") ? "ru" : "en";
+        }
+        if (app && app.settings && typeof app.settings.getAllSettings === "function") {
+            const s = app.settings.getAllSettings();
+            if (s && s.language) return s.language.toLowerCase().startsWith("ru") ? "ru" : "en";
+        }
+    } catch (e) {}
+    try {
+        const docLang = (typeof document !== "undefined" && (document.documentElement.getAttribute("lang") || document.documentElement.lang)) || "";
+        if (docLang) return docLang.toLowerCase().startsWith("ru") ? "ru" : "en";
+    } catch (e) {}
+    try {
+        if (typeof navigator !== "undefined" && navigator.language) {
+            return navigator.language.toLowerCase().startsWith("ru") ? "ru" : "en";
+        }
+    } catch (e) {}
+    return "en";
+}
+
+function mpT(app, key, ...args) {
+    const lang = mpGetLanguage(app);
+    const dict = MP_I18N[lang] || MP_I18N.en;
+    let text = dict[key] || (MP_I18N.en && MP_I18N.en[key]) || key;
+    if (args.length > 0) {
+        for (let i = 0; i < args.length; i++) {
+            text = text.replace(new RegExp(`\\{${i}\\}`, "g"), args[i] !== undefined ? args[i] : "");
+        }
+    }
+    return text;
+}
+
 function mpProtocolType(message) {
     const type = message && message.t;
-    if (type === "op") return "operation";
+    if (type === "op" || type === "rtt" || type === "wait-host") return "operation";
     if (type === "welcome" || type === "resync") return "resync";
     if (type === "player-list" || type === "player-left" || type === "player-joined") return "player-list";
     if (type === "kick" || type === "mods-mismatch") return "operation-rejected";
@@ -210,7 +390,19 @@ class MpTransportClient extends MpWebSocketTransport {}
 /* ------------------------------------------------------------------ */
 
 class Mod extends shapez.Mod {
-    init() {
+        t(key, ...args) {
+        return mpT(this.app, key, ...args);
+    }
+
+    getDefaultPlayerName() {
+        return this.t("dialog.name.default");
+    }
+
+    getPlayerName() {
+        return (this.myName && this.myName.trim()) || this.getDefaultPlayerName();
+    }
+
+init() {
         // Защита от повторной инициализации (мод грузится один раз)
         if (window.__multiplay_initialized) {
             return;
@@ -220,7 +412,8 @@ class Mod extends shapez.Mod {
         this.role = null; // "host" | "client" | null
         this.net = null;
         this.myPlayerId = null;
-        this.myName = "Игрок";
+        this.myName = "";
+        this.worldLoaded = false;
         this.players = new Map();
         this.session = null; // { root, hudPart, chatLines }
         this.pendingDump = null;
@@ -310,7 +503,7 @@ class Mod extends shapez.Mod {
                         if (player) {
                             this.players.delete(clientId);
                             this.broadcast({ t: "player-left", id: clientId, reason: "disconnected" });
-                            this.inGameNotify(`${player.name} покинул игру`);
+                            this.inGameNotify(this.t("notify.left", player.name));
                             this.updateHudPanel();
                         }
                     };
@@ -812,7 +1005,7 @@ class Mod extends shapez.Mod {
 
             const btn = document.createElement("button");
             btn.className = "styledButton mpMenuButton";
-            btn.textContent = "Мультиплеер";
+            btn.textContent = this.t("btn.multiplayer");
             btn.style.order = "-1";
             container.appendChild(btn);
             state.trackClicks(btn, () => this.showMenuDialog(state));
@@ -823,142 +1016,14 @@ class Mod extends shapez.Mod {
     showMenuDialog(state) {
         const html = `
             <div class="mpMenuDialog">
-                <div class="desc">
-                    Запусти отдельный Shapez Multiplayer Server. Хост открывает текущий мир
-                    и получает код приглашения.
-                    Друг вводит код и подключается к его миру.
-                </div>
-                <div style="display:flex; flex-direction:column; gap:8px;">
-                    <button class="styledButton mpBtnHost">Открыть текущий мир (я — хост)</button>
-                    <button class="styledButton mpBtnJoin">Подключиться к другу</button>
-                </div>
-            </div>
-        `;
-        const dialog = new shapez.Dialog({
-            app: this.app,
-            title: "Мультиплеер",
-            contentHTML: html,
-            buttons: ["cancel:bad:escape"],
-            type: "info",
-        });
-        state.dialogs.internalShowDialog(dialog);
-
-        dialog.dialogElem.querySelector(".mpBtnHost").addEventListener("click", () => {
-            dialog.closeRequested.dispatch();
-            this.hostFlow(state);
-        });
-        dialog.dialogElem.querySelector(".mpBtnJoin").addEventListener("click", () => {
-            dialog.closeRequested.dispatch();
-            this.joinFlow(state);
-        });
-    }
-
-    normalizeServerUrl(value) {
-        let url = String(value || "").trim().replace(/\/$/, "");
-        if (!/^wss?:\/\//i.test(url)) url = "ws://" + url;
-        const parsed = new URL(url);
-        if (!/^wss?:$/.test(parsed.protocol) || !parsed.hostname || !parsed.port) {
-            throw new Error("Нужен адрес вида ws://IP:порт");
-        }
-        return parsed.toString().replace(/\/$/, "");
-    }
-
-    makeHello(role, roomId = null) {
-        return {
-            type: "hello",
-            protocolVersion: MP_PROTOCOL_VERSION,
-            role,
-            roomId,
-            name: this.myName,
-            gameVersion: mpGetGameVersion(),
-            modVersion: METADATA.version,
-            mods: this.getModsList(),
-        };
-    }
-
-    formatConnectionError(error) {
-        const details = error && error.details;
-        if (!details) return error.message || String(error);
-        const lines = [error.message || "Подключение отклонено"];
-        if (details.gameVersion) lines.push(`Версия игры: хост ${details.gameVersion.host}, клиент ${details.gameVersion.client}`);
-        if (details.multiplayerVersion) lines.push(`Версия multiplay: хост ${details.multiplayerVersion.host}, клиент ${details.multiplayerVersion.client}`);
-        if (details.missing && details.missing.length) lines.push("Отсутствуют у клиента: " + details.missing.map(m => `${m.id} ${m.version}`).join(", "));
-        if (details.extra && details.extra.length) lines.push("Лишние у клиента: " + details.extra.map(m => `${m.id} ${m.version}`).join(", "));
-        if (details.versionMismatch && details.versionMismatch.length) lines.push("Другие версии: " + details.versionMismatch.map(m => `${m.id} (хост ${m.host}, клиент ${m.client})`).join(", "));
-        return lines.join("\n");
-    }
-
-    async hostFlow(state) {
-        if (this.role) this.leaveSession(false);
-        const name = await this.askName(state);
-        if (name === null) return;
-        this.myName = name;
-
-        const serverInput = await this.askText(
-            state,
-            "Адрес сервера",
-            "Сначала запусти отдельный shapez-multiplayer-server.exe, затем укажи его WebSocket-адрес.",
-            this.serverUrl || MP_DEFAULT_SERVER
-        );
-        if (serverInput === null) return;
-
-        try {
-            this.serverUrl = this.normalizeServerUrl(serverInput);
-            this.net = new MpTransportHost(this.serverUrl, this.makeHello("host"));
-            const welcome = await this.net.start();
-            this.roomId = welcome.roomId;
-            this.myPlayerId = welcome.playerId;
-            this.serverPort = Number(new URL(this.serverUrl).port);
-        } catch (ex) {
-            state.dialogs.showWarning("Мультиплеер", "Не удалось создать комнату: " + ex.message);
-            this.net = null;
-            return;
-        }
-
-        this.role = "host";
-        this.players.set(this.myPlayerId, { id: this.myPlayerId, name: this.myName, color: mpColorForId(this.myPlayerId), ping: 0, cursorPos: null });
-        this.pendingClients = [];
-        this.updateHudPanel();
-        if (this.session) {
-            this.startCursorTicker();
-            this.startHubStateTicker();
-        }
-
-        this.net.onClientDisconnected = clientId => {
-            const player = this.players.get(clientId);
-            if (player) {
-                this.players.delete(clientId);
-                this.broadcast({ t: "player-left", id: clientId, reason: "disconnected" });
-                this.inGameNotify(`${player.name} покинул игру`);
-                this.updateHudPanel();
-            }
-        };
-        this.net.onClientMessage = (clientId, raw) => {
-            let msg;
-            try {
-                msg = JSON.parse(raw);
-            } catch (ex) {
-                return;
-            }
-            this.handleClientMessage(clientId, msg);
-        };
-
-        // Код приглашения
-        const code = this.buildInviteCode();
-
-        const html = `
-            <div class="mpMenuDialog">
-                <div>Комната создана! Отправь другу этот код:</div>
-                <div class="mpShareCode">${mpEscapeHtml(code)}</div>
-                <div style="margin-top:8px; color:#999; font-size:11px;">
-                    Затем начни новую игру (или продолжи существующую) —
-                    друг подключится к твоему миру.
-                </div>
+                ${this.t("dialog.created.desc")}
+                <input class="mpCodeInput" readonly value="${mpEscapeHtml(code)}"
+                    onclick="this.select()" style="width:100%; margin:8px 0; font-family:monospace; font-size:12px; padding:6px; box-sizing:border-box;"/>
             </div>
         `;
         const dlg = new shapez.Dialog({
             app: this.app,
-            title: "Мир создан",
+            title: this.t("dialog.created.title"),
             contentHTML: html,
             buttons: ["ok:good:enter"],
             type: "info",
@@ -987,12 +1052,7 @@ class Mod extends shapez.Mod {
         if (name === null) return;
         this.myName = name;
 
-        const input = await this.askText(
-            state,
-            "Подключение",
-            "Вставь код от друга (MPZ2:...).",
-            ""
-        );
+        const input = await this.askText(state, this.t("dialog.connect.title"), this.t("dialog.connect.desc"), "");
         if (input === null) return;
 
         let url;
@@ -1005,7 +1065,7 @@ class Mod extends shapez.Mod {
             roomId = String(payload.room || "").toUpperCase();
             if (!/^[A-Z2-9]{6}$/.test(roomId) || payload.protocol !== MP_PROTOCOL_VERSION) throw new Error("bad");
         } catch (ex) {
-            state.dialogs.showWarning("Мультиплеер", "Некорректный код подключения");
+            state.dialogs.showWarning(this.t("mod.name"), this.t("dialog.connect.badCode"));
             return;
         }
 
@@ -1016,10 +1076,7 @@ class Mod extends shapez.Mod {
         try {
             welcome = await net.connect();
         } catch (ex) {
-            state.dialogs.showWarning(
-                "Мультиплеер",
-                "Не удалось подключиться:\n" + this.formatConnectionError(ex)
-            );
+            state.dialogs.showWarning(this.t("mod.name"), this.t("dialog.connect.fail", this.formatConnectionError(ex)));
             return;
         }
 
@@ -1029,10 +1086,7 @@ class Mod extends shapez.Mod {
         this.roomId = welcome.roomId;
         this.myPlayerId = welcome.playerId;
 
-        state.dialogs.showInfo(
-            "Мультиплеер",
-            "Подключено! Ждём, пока хост войдёт в мир — после этого ты автоматически попадёшь в его игру."
-        );
+        state.dialogs.showInfo(this.t("mod.name"), this.t("dialog.connect.waiting"));
     }
 
     askName(state) {
@@ -1040,14 +1094,14 @@ class Mod extends shapez.Mod {
             const input = new shapez.FormElementInput({
                 id: "mp_name",
                 label: null,
-                placeholder: "Твоё имя",
-                defaultValue: this.myName || "",
+                placeholder: this.t("dialog.name.placeholder"),
+                defaultValue: this.myName || this.getDefaultPlayerName(),
                 validator: val => val.trim().length >= 1 && val.trim().length <= MP_MAX_NAME,
             });
             const dialog = new shapez.DialogWithForm({
                 app: this.app,
-                title: "Имя игрока",
-                desc: "Друг будет видеть это имя и твой курсор.",
+                title: this.t("dialog.name.title"),
+                desc: this.t("dialog.name.desc"),
                 formElements: [input],
                 buttons: ["cancel:bad:escape", "ok:good:enter"],
             });
@@ -1133,11 +1187,10 @@ class Mod extends shapez.Mod {
             }
             this.updateHudPanel();
         } else if (this.role === "client") {
-            // Если дамп уже пришёл — стартуем вход в мир
             if (this.pendingDump) {
                 this.enterWorldWithDump(this.pendingDump);
                 this.pendingDump = null;
-            } else {
+            } else if (!this.worldLoaded) {
                 this.net.send({ t: "request-state" });
             }
         }
@@ -1149,7 +1202,8 @@ class Mod extends shapez.Mod {
         const savegame = app.savegameMgr.createNewSavegame();
         savegame.currentData.dump = dump;
         savegame.currentData.lastUpdate = Date.now();
-        this.inGameNotify("Загружаем мир хоста...");
+        this.worldLoaded = true;
+        this.inGameNotify(this.t("notify.loadingWorld"));
         app.stateMgr.moveToState("InGameState", { savegame });
     }
 
@@ -1162,11 +1216,13 @@ class Mod extends shapez.Mod {
         if (this.net) {
             this.net = null;
         }
-        this.inGameNotify("Соединение с хостом потеряно" + (reason ? ` (${reason})` : ""));
+        this.worldLoaded = false;
+        this.inGameNotify(this.t("notify.disconnected", reason ? ` (${reason})` : ""));
         this.updateHudPanel();
     }
 
     leaveSession(notifyUser = true) {
+        this.worldLoaded = false;
         if (this.role === "host" && this.net) {
             this.net.stop();
         } else if (this.role === "client" && this.net) {
@@ -1187,7 +1243,7 @@ class Mod extends shapez.Mod {
             this.hubTimer = null;
         }
         if (notifyUser) {
-            this.inGameNotify("Сессия мультиплеера завершена");
+            this.inGameNotify(this.t("notify.sessionEnded"));
         }
         this.updateHudPanel();
     }
@@ -1248,7 +1304,7 @@ class Mod extends shapez.Mod {
                 }
 
                 this.broadcastPlayerList();
-                this.inGameNotify(`${name} подключился`);
+                this.inGameNotify(this.t("notify.joined", name));
                 break;
             }
 
@@ -1586,7 +1642,7 @@ class Mod extends shapez.Mod {
                 const stateMgr = this.app.stateMgr;
                 const current = stateMgr ? stateMgr.currentState : null;
                 if (current && current.constructor.name === "InGameState") {
-                    this.inGameNotify("Выйди в меню и подключись заново");
+                    this.inGameNotify(this.t("notify.reconnectNotice"));
                     return;
                 }
 
@@ -1639,7 +1695,7 @@ class Mod extends shapez.Mod {
 
             case "player-joined": {
                 this.players.set(msg.player.id, msg.player);
-                this.inGameNotify(`${msg.player.name} подключился`);
+                this.inGameNotify(this.t("notify.joined", msg.player.name));
                 this.updateHudPanel();
                 break;
             }
@@ -1648,7 +1704,7 @@ class Mod extends shapez.Mod {
                 const player = this.players.get(msg.id);
                 if (player) {
                     this.players.delete(msg.id);
-                    this.inGameNotify(`${player.name} покинул игру`);
+                    this.inGameNotify(this.t("notify.left", player.name));
                 }
                 this.updateHudPanel();
                 break;
@@ -1676,12 +1732,12 @@ class Mod extends shapez.Mod {
                     this.net = null;
                     net.close();
                 }
-                alert("Тебя отключили от сервера: " + (msg.reason || ""));
+                alert(this.t("notify.kicked", msg.reason || ""));
                 break;
             }
 
             case "operation-rejected": {
-                this.inGameNotify("Операция отклонена: " + (msg.reason || "неизвестная причина"));
+                this.inGameNotify(this.t("notify.opRejected", msg.reason || ""));
                 break;
             }
 
@@ -1719,12 +1775,12 @@ class Mod extends shapez.Mod {
                     return;
                 }
                 if (this.applyFullDumpLive(dump, msg.entities)) {
-                    this.inGameNotify("Мир обновлён из хоста");
+                    this.inGameNotify(this.t("notify.resynced"));
                     this.resyncCooldownUntil = Date.now() + 5000;
                     mpLog("RESYNC: применён дамп, сущностей теперь:",
                         this.session.root.entityMgr.entities.length, "(у хоста", msg.entities + ")");
                 } else {
-                    this.inGameNotify("Не удалось обновить мир — смотри журнал ошибок");
+                    this.inGameNotify(this.t("notify.resyncFailed"));
                 }
                 break;
             }
@@ -2129,7 +2185,7 @@ class Mod extends shapez.Mod {
 
         const signalValueInput = new shapez.FormElementInput({
             id: "mp_signal",
-            label: "Код сигнала (например: CuCuCuCu, red, 1)",
+            label: this.t("signal.label"),
             placeholder: "",
             defaultValue: current ? current.getAsCopyableKey() : "",
             validator: val => !!this.parseSignalCode(root, entity, val),
@@ -2148,8 +2204,8 @@ class Mod extends shapez.Mod {
 
         const dialog = new shapez.DialogWithForm({
             app: this.app,
-            title: "Сигнал",
-            desc: "Выбери значение из списка или введи код",
+            title: this.t("signal.title"),
+            desc: this.t("signal.desc"),
             formElements: [itemInput, signalValueInput],
             buttons: ["cancel:bad:escape", "ok:good:enter"],
         });
@@ -2354,6 +2410,11 @@ class Mod extends shapez.Mod {
 // shouldPauseGame()/update()/draw() у всех частей, без базового класса
 // любой из этих вызовов бросает TypeError и роняет игровой цикл.
 class MpHudPart extends shapez.BaseHUDPart {
+    t(key, ...args) {
+        return this.mod.t(key, ...args);
+    }
+
+
     constructor(mod, root) {
         super(root);
         this.mod = mod;
@@ -2378,7 +2439,7 @@ class MpHudPart extends shapez.BaseHUDPart {
 
         this.startHostBtn = document.createElement("button");
         this.startHostBtn.classList.add("mpBtn");
-        this.startHostBtn.textContent = "Создать сессию для этого мира";
+        this.startHostBtn.textContent = this.t("hud.hostThisWorld");
         this.startHostBtn.addEventListener("click", ev => {
             ev.stopPropagation();
             this.mod.hostFlow({ dialogs: this.root.hud.parts.dialogs });
@@ -2389,8 +2450,8 @@ class MpHudPart extends shapez.BaseHUDPart {
         // у клиента — код для подключения новых игроков)
         this.copyCodeBtn = document.createElement("button");
         this.copyCodeBtn.classList.add("mpBtn");
-        this.copyCodeBtn.textContent = "Скопировать код мира";
-        this.copyCodeBtn.title = "Код появится у друга в буфере обмена — он сможет подключиться";
+        this.copyCodeBtn.textContent = this.t("hud.copyCode");
+        this.copyCodeBtn.title = this.t("hud.copyCodeTitle");
         this.copyCodeBtn.addEventListener("click", ev => {
             ev.stopPropagation();
             const code = this.mod.role === "host" ? this.mod.buildInviteCode() : null;
@@ -2399,10 +2460,12 @@ class MpHudPart extends shapez.BaseHUDPart {
                 return;
             }
             const ok = () => {
-                this.copyCodeBtn.textContent = "Скопировано!";
-                setTimeout(() => {
-                    this.copyCodeBtn.textContent = "Скопировать код мира";
-                }, 1500);
+                this.copyCodeBtn.textContent = this.t("hud.copied");
+            this.copying = true;
+            setTimeout(() => {
+                this.copying = false;
+                if (this.copyCodeBtn) this.copyCodeBtn.textContent = this.t("hud.copyCode");
+            }, 1500);
             };
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(code).then(ok, () => this.fallbackCopy(code, ok));
@@ -2416,21 +2479,24 @@ class MpHudPart extends shapez.BaseHUDPart {
         // состояние с хоста — чинит визуальные баги и рассинхрон
         this.resyncBtn = document.createElement("button");
         this.resyncBtn.classList.add("mpBtn");
-        this.resyncBtn.textContent = "Обновить мир";
-        this.resyncBtn.title = "Полностью синхронизировать мир с хостом (чинит рассинхрон)";
+        this.resyncBtn.textContent = this.t("hud.resyncWorld");
+        this.resyncBtn.title = this.t("hud.resyncTitle");
         this.resyncBtn.addEventListener("click", ev => {
             ev.stopPropagation();
             if (this.mod.role !== "client") {
                 this.mod.inGameNotify("Обновление доступно только у клиента — у хоста мир и так актуальный");
                 return;
             }
-            this.resyncBtn.textContent = "Обновляю...";
+            this.resyncBtn.textContent = this.t("hud.resyncing");
             this.resyncBtn.disabled = true;
+            this.resyncing = true;
             this.mod.requestResync();
-            // Вернём кнопке вид через 3с (дамп мог уже прийти)
             setTimeout(() => {
-                this.resyncBtn.textContent = "Обновить мир";
-                this.resyncBtn.disabled = false;
+                this.resyncing = false;
+                if (this.resyncBtn) {
+                    this.resyncBtn.textContent = this.t("hud.resyncWorld");
+                    this.resyncBtn.disabled = false;
+                }
             }, 3000);
         });
         this.element.appendChild(this.resyncBtn);
@@ -2443,7 +2509,7 @@ class MpHudPart extends shapez.BaseHUDPart {
         // Чат: скрыт по умолчанию, открывается по кнопке (или Enter см. ниже)
         this.chatToggleBtn = document.createElement("button");
         this.chatToggleBtn.classList.add("mpBtn");
-        this.chatToggleBtn.textContent = "Чат";
+        this.chatToggleBtn.textContent = this.t("hud.chat");
         this.chatToggleBtn.addEventListener("click", ev => {
             ev.stopPropagation();
             this.toggleChat();
@@ -2456,7 +2522,7 @@ class MpHudPart extends shapez.BaseHUDPart {
 
         this.chatInput = document.createElement("input");
         this.chatInput.classList.add("mpChatInput", "mpChatHidden");
-        this.chatInput.placeholder = "Сообщение, Enter — отправить, Esc — закрыть";
+        this.chatInput.placeholder = this.t("hud.chatPlaceholder");
         this.chatInput.addEventListener("keydown", ev => {
             // Пока поле в фокусе — все нажатия наши, игре не отдаём
             ev.stopPropagation();
@@ -2484,7 +2550,7 @@ class MpHudPart extends shapez.BaseHUDPart {
         // Кнопка выхода из сессии
         this.leaveBtn = document.createElement("button");
         this.leaveBtn.classList.add("mpBtn", "danger");
-        this.leaveBtn.textContent = "Покинуть сессию";
+        this.leaveBtn.textContent = this.t("hud.leaveSession");
         this.leaveBtn.addEventListener("click", () => {
             this.mod.leaveSession(true);
             this.updatePanel();
@@ -2560,17 +2626,28 @@ class MpHudPart extends shapez.BaseHUDPart {
     updatePanel() {
         if (!this.element) return;
         const mod = this.mod;
-        const roleLabel =
-            mod.role === "host" ? "хост" : mod.role === "client" ? "клиент" : "нет сессии";
-        this.headerElem.innerHTML = `Мультиплеер <span class="role ${mod.role || ""}">${roleLabel}</span>`;
+        const roleLabel = mod.role === "host" ? this.t("hud.roleHost") : mod.role === "client" ? this.t("hud.roleClient") : this.t("hud.roleNoSession");
+        this.headerElem.innerHTML = `${this.t("mod.name")} <span class="role ${mod.role || ""}">${roleLabel}</span>`;
+        this.startHostBtn.textContent = this.t("hud.hostThisWorld");
+        if (!this.copying) {
+            this.copyCodeBtn.textContent = this.t("hud.copyCode");
+            this.copyCodeBtn.title = this.t("hud.copyCodeTitle");
+        }
+        if (!this.resyncing) {
+            this.resyncBtn.textContent = this.t("hud.resyncWorld");
+            this.resyncBtn.title = this.t("hud.resyncTitle");
+        }
+        this.chatToggleBtn.textContent = this.t("hud.chat");
+        this.chatInput.placeholder = this.t("hud.chatPlaceholder");
+        this.leaveBtn.textContent = this.t("hud.leaveSession");
 
         let html = "";
         mod.players.forEach(player => {
             html += `
                 <div class="mpPlayer">
                     <span class="mpPlayerDot" style="background:${player.color}"></span>
-                    <span class="mpPlayerName">${mpEscapeHtml(player.name)}${player.id === mod.myPlayerId ? " (ты)" : ""}</span>
-                    <span class="mpPlayerPing">${player.ping ? player.ping + "мс" : ""}</span>
+                    <span class="mpPlayerName">${mpEscapeHtml(player.name)}${player.id === mod.myPlayerId ? " " + this.t("hud.youTag") : ""}</span>
+                    <span class="mpPlayerPing">${player.ping ? player.ping + " " + this.t("hud.ms") : ""}</span>
                 </div>
             `;
         });
@@ -2588,7 +2665,7 @@ class MpHudPart extends shapez.BaseHUDPart {
         // Код подключения больше не показываем как текст (мешает) —
         // копирование через кнопку "Скопировать код мира" выше.
         if (mod.role === "client" && mod.net) {
-            this.codeElem.textContent = "Подключён к " + (mod.net.url || "");
+            this.codeElem.textContent = this.t("hud.connectedTo", mod.net.url || "");
         } else {
             this.codeElem.textContent = "";
         }

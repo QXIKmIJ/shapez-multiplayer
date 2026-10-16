@@ -1,4 +1,4 @@
-# =====================================================================
+﻿# =====================================================================
 # Shapez Multiplayer Server Launcher
 # =====================================================================
 $ErrorActionPreference = 'Stop'
@@ -9,6 +9,7 @@ $exePath = Join-Path $projectDir "shapez-multiplayer-server.exe"
 # Detect network interfaces
 $localIps = @()
 $tailscaleIps = @()
+$radminIps = @()
 try {
     $nics = [System.Net.NetworkInformation.NetworkInterface]::GetAllNetworkInterfaces() |
         Where-Object { $_.OperationalStatus -eq 'Up' -and $_.NetworkInterfaceType -ne 'Loopback' }
@@ -19,6 +20,8 @@ try {
                 $addr = $ip.Address.ToString()
                 if ($nic.Description -match "Tailscale" -or $nic.Name -match "Tailscale" -or $addr.StartsWith("100.")) {
                     $tailscaleIps += $addr
+                } elseif ($nic.Description -match "Radmin" -or $nic.Name -match "Radmin" -or $addr.StartsWith("26.")) {
+                    $radminIps += $addr
                 } else {
                     $localIps += $addr
                 }
@@ -30,6 +33,13 @@ try {
 Write-Host "==========================================================" -ForegroundColor Cyan
 Write-Host "            Shapez Multiplayer Server v1.1.0              " -ForegroundColor Green
 Write-Host "==========================================================" -ForegroundColor Cyan
+
+if ($radminIps.Count -gt 0) {
+    Write-Host "Radmin VPN IP (игра с друзьями в сети Radmin):" -ForegroundColor Magenta
+    foreach ($rip in $radminIps) {
+        Write-Host "  -> ws://${rip}:7777" -ForegroundColor Yellow
+    }
+}
 
 if ($tailscaleIps.Count -gt 0) {
     Write-Host "Tailscale IP (игра через интернет без открытия портов):" -ForegroundColor Magenta

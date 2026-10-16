@@ -8,7 +8,8 @@ const PROTOCOL_VERSION = 2;
 const ROOM_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 const FORWARDED_TYPES = new Set([
     "operation", "cursor", "chat", "hub-state", "request-resync", "resync",
-    "ping", "pong", "disconnect", "player-list", "request-state", "operation-rejected"
+    "ping", "pong", "disconnect", "player-list", "request-state", "operation-rejected",
+    "rtt", "wait-host"
 ]);
 
 const DEFAULT_CONFIG = Object.freeze({
